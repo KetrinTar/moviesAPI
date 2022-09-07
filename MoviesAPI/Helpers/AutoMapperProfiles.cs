@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Spatial;
 using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
 using System;
@@ -14,6 +15,10 @@ namespace MoviesAPI.Helpers
         {
             CreateMap<GenreDTO, Genre>().ReverseMap();
             CreateMap<GenreCreationDTO, Genre>();
+
+            CreateMap<ActorDTO, Actor>().ReverseMap();
+            CreateMap<ActorCreationDTO, Actor>()
+                .ForMember(x => x.Picture, options => options.Ignore());
         }
     }
 }
