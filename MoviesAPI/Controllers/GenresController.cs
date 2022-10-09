@@ -18,6 +18,7 @@ namespace MoviesAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class GenresController : ControllerBase
     {       
         private readonly ILogger<GenresController> logger;
@@ -41,6 +42,15 @@ namespace MoviesAPI.Controllers
             var genres= await queryable.OrderBy(x => x.Name).Paginate(paginationDTO).ToListAsync();
             return mapper.Map<List<GenreDTO>>(genres);
             
+        }
+
+        [HttpGet("all")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<GenreDTO>>> Get()
+        {
+            var genres = await context.Genres.OrderBy(x => x.Name).ToListAsync();
+            return mapper.Map<List<GenreDTO>>(genres);
+
         }
         [HttpGet("{id:int}")]
         public async Task<ActionResult<GenreDTO>> Get(int id)

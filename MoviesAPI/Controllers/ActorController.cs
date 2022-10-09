@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoviesAPI.DTOs;
@@ -13,6 +15,7 @@ namespace MoviesAPI.Controllers
 {
     [Route("api/actors")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class ActorController : ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -31,7 +34,9 @@ namespace MoviesAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ActorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
         {
-            var actors = await context.Actors.ToListAsync();
+            var queryable = context.Actors.AsQueryable();
+            await HttpContext.InsertParametersPaginetionInHeader(queryable);
+            var actors = await queryable.OrderBy(x => x.Name).Paginate(paginationDTO).ToListAsync();
             
             return mapper.Map<List<ActorDTO>>(actors);
 
@@ -47,8 +52,20 @@ namespace MoviesAPI.Controllers
             }
             return mapper.Map<ActorDTO>(actor);
         }
+        [HttpGet("searchByName/{query}")]
+        public async Task<ActionResult<List<ActorsMovieDTO>>> SearchByName(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) { return new List<ActorsMovieDTO>(); }
+
+            return await context.Actors
+                .Where(x => x.Name.Contains(query))
+                .OrderBy(x => x.Name)
+                .Select(x => new ActorsMovieDTO { Id = x.Id, Name = x.Name, Picture = x.Picture })
+                .Take(5)
+                .ToListAsync();
+        }
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] ActorCreationDTO actorCreationDTO)
+        public async Task<ActionResult> Post([FromForm] ActorCreationDTO actorCreationDTO)
         {
             var actor = mapper.Map<Actor>(actorCreationDTO);
             if(actorCreationDTO.Picture != null)
@@ -61,28 +78,33 @@ namespace MoviesAPI.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(int id, [FromBody] ActorCreationDTO actorCreationDTO)
+        public async Task<ActionResult> Put(int id, [FromForm] ActorCreationDTO actorCreationDTO)
         {
-            //var genre = await context.Genres.FirstOrDefaultAsync(x => x.Id == id);
-            //if (genre == null)
-            //{
-            //    return NotFound();
-            //}
-            //genre = mapper.Map(genreCreationDTO, genre);
-            //await context.SaveChangesAsync();
-            //return NoContent();
-            throw new NotImplementedException();
+            var actor = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+            if (actor == null)
+            {
+                return NotFound();
+            }
+            actor = mapper.Map(actorCreationDTO, actor);
+            if(actorCreationDTO.Picture != null)
+            {
+                actor.Picture = await fileStorageService.EditFile(containerName,
+                    actorCreationDTO.Picture, actor.Picture);
+            }
+
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var exists = await context.Actors.AnyAsync(x => x.Id == id);
-            if (!exists)
+            var actor = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+            if (actor == null)
             {
                 return NotFound();
             }
-            context.Remove(exists);
+            context.Remove(actor);
             await context.SaveChangesAsync();
             return NoContent();
         }
