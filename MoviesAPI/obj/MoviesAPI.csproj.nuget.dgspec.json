@@ -54,6 +54,10 @@
               "target": "Package",
               "version": "[12.13.1, )"
             },
+            "DataAnnotationsExtensions": {
+              "target": "Package",
+              "version": "[5.0.1.27, )"
+            },
             "Microsoft.AspNet.Mvc": {
               "target": "Package",
               "version": "[5.2.9, )"
@@ -62,11 +66,19 @@
               "target": "Package",
               "version": "[5.0.17, )"
             },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[5.0.17, )"
+            },
             "Microsoft.AspNetCore.Mvc.Abstractions": {
               "target": "Package",
               "version": "[2.2.0, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[5.0.17, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite": {
               "target": "Package",
               "version": "[5.0.17, )"
             },
@@ -79,6 +91,10 @@
             "Microsoft.Spatial": {
               "target": "Package",
               "version": "[7.12.2, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
