@@ -99,6 +99,7 @@ namespace MoviesAPI.Controllers
 
             var inTheaters = await context.Movies
                 .Where(x => x.InTheaters)
+                .Where(x => x.ReleaseDate < today)
                 .OrderBy(x => x.ReleaseDate)
                 .Include(x => x.MoviesGenres).ThenInclude(x => x.Genre)
                 .Include(x => x.MovieTheatersMovies).ThenInclude(x => x.MovieTheater)
