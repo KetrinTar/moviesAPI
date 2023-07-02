@@ -58,8 +58,9 @@ namespace MoviesAPI
 
             services.AddSingleton<GeometryFactory>(NtsGeometryServices
                 .Instance.CreateGeometryFactory(srid: 4326));
+            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
 
-            services.AddScoped<IFileStorageService, InAppStorageService>();
+            services.AddScoped<IFileStorageService, AzureStorageService>();
             services.AddHttpContextAccessor();
 
             services.AddControllers(options => {
